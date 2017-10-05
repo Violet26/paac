@@ -22,3 +22,4 @@ addSbtPlugin("org.brianmckenna" % "sbt-wartremover" % "0.14")
 addSbtPlugin("org.ensime" % "sbt-ensime" % "1.0.0")
 
 addSbtPlugin("com.github.fedragon" % "sbt-todolist" % "0.6")
+
