@@ -272,7 +272,22 @@ trait TaperedAllowanceCalculator extends ExtendedSummaryCalculator with DetailsC
         .map( p => if (p._2) p._1._2 else p._1._1)
 
     val (cyMinus1:Long, cyMinus2:Long) = (previousUnusedAllowances(0), previousUnusedAllowances(1))
-    val v = thisYearUnusedAllowance + cyMinus1 + cyMinus2
+    val prev = previousUnusedAllowances.slice(0, 3).foldLeft(0L)(_ + _)
+    // Oct 2017  changes
+    val v =
+      if(year == 2016 && cyMinus1==0 && previousYear.get.summaryResult.unusedAllowance!=0){
+        Logger.debug("unusedAllowancesMPA Example3 option 1 : "+(previousYear.get.summaryResult.unusedAllowance + prev - cyMinus2))
+        Logger.debug("unusedAllowancesMPA Example3 option 2 : "+ (unusedAllowancesReducedCY3 - moneyPurchaseAA))
+        previousYear.get.summaryResult.unusedAllowance + prev - cyMinus2
+        //unusedAllowancesReducedCY3 - moneyPurchaseAA
+      }
+      else if (year == 2017 || (thisYearUnusedAllowance + cyMinus1 + cyMinus2) != 0) {
+        thisYearUnusedAllowance + cyMinus1 + cyMinus2
+      } else {
+         previousYear.get.summaryResult.unusedAAA + prev
+      }
+    //val v = thisYearUnusedAllowance + cyMinus1 + cyMinus2// org
+
     detail("allowance.ccf.calculation",
       s"cyunused:${currency(thisYearUnusedAllowance)};op: + ;" +
       s"unused_${year-1}:${currency(cyMinus1)};op: + ;unused_${year-2}:${currency(cyMinus2)};")
@@ -316,7 +331,11 @@ trait TaperedAllowanceCalculator extends ExtendedSummaryCalculator with DetailsC
         .zip(previous3YearsIsACA)
         .map( p => if (p._2) p._1._2 else p._1._1)
     val prev = previousUnusedAllowances.slice(0,3).foldLeft(0L)(_ + _)
-    val v = _alternativeAA + prev
+
+    //val v = _alternativeAA + prev //org Oct 2017 changes
+    val availableAAWithCCF = if (previousYear == None) prev else previousYear.get.summaryResult.availableAAWithCCF
+    val v = _alternativeAA + availableAAWithCCF
+
     detail("allowance.alt.cf.calculation",s"aaa:${currency(alternativeAA)};op:+;aaccf:${currency(prev)}")
     detail("allowance.alt.cf.calculation.reason","post_2018")
     v
